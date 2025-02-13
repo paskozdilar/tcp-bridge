@@ -102,8 +102,10 @@ func forwardPort(port string) {
 			dst.Close()
 		}()
 
-		io.Copy(src, dst)
-		src.Close()
-		dst.Close()
+		go func() {
+			io.Copy(src, dst)
+			src.Close()
+			dst.Close()
+		}()
 	}
 }
