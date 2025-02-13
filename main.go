@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -15,16 +16,19 @@ import (
 var (
 	host  string
 	ports []string
-	usage string = fmt.Sprintf(
-		"%s: [-h|--help] HOST PORTS...\n"+
-			"\n"+
-			"Forwards all TCP connections to HOST, from a list of PORTS.\n"+
-			"\n"+
-			"Arguments:\n"+
-			"    HOST    destination host or address (e.g. \"example.com\")\n"+
-			"    PORTS   space-delimited list of ports (e.g. \"80 443\")",
-		os.Args[0],
-	)
+)
+
+var usage string = fmt.Sprintf(
+	strings.Join([]string{
+		"%s: [-h|--help] HOST PORTS...",
+		"",
+		"Forwards all TCP connections to HOST, from a list of PORTS.",
+		"",
+		"Arguments:",
+		"    HOST    destination host or address (e.g. \"example.com\")",
+		"    PORTS   space-delimited list of ports (e.g. \"80 443\")",
+	}, "\n"),
+	os.Args[0],
 )
 
 func main() {
