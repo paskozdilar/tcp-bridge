@@ -105,7 +105,7 @@ func forwardPort(port string) {
 }
 
 func forwardPortToPort(pair portPair) {
-	l, err := net.Listen("tcp", fmt.Sprintf(":%s", pair.src))
+	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", pair.src))
 	if err != nil {
 		log.Printf("error listening on port %s: %v", pair.src, err)
 		return
