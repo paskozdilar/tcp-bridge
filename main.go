@@ -101,52 +101,10 @@ func parse() error {
 }
 
 func forwardPort(port string) {
-	log := log.New(log.Writer(),
-		fmt.Sprintf("PORT %s [%d]: ", port, n.Add(1)),
-		log.Flags())
-
-	l, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer l.Close()
-
-	log.Printf("forwarding port %[1]s to %[2]s:%[1]s", port, host)
-
-	for {
-		src, err := l.Accept()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		dst, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%s", host, port), 5*time.Second)
-		if err != nil {
-			log.Printf("dial error to %s:%s: %v", host, port, err)
-			src.Close()
-			continue
-		}
-
-		go func() {
-			io.Copy(src, dst)
-			src.Close()
-			dst.Close()
-		}()
-
-		go func() {
-			io.Copy(src, dst)
-			src.Close()
-			dst.Close()
-		}()
-	}
+	forwardPortToPort(portPair{src: port, dst: port})
 }
 
 func forwardPortToPort(pair portPair) {
-	log := log.New(log.Writer(),
-		fmt.Sprintf("PORT %s-%s [%d]: ", pair.src, pair.dst, n.Add(1)),
-		log.Flags())
-
 	l, err := net.Listen("tcp", fmt.Sprintf(":%s", pair.src))
 	if err != nil {
 		log.Printf("error listening on port %s: %v", pair.src, err)
@@ -154,37 +112,32 @@ func forwardPortToPort(pair portPair) {
 	}
 	defer l.Close()
 
-	log.Printf("forwarding port %s to %s:%s", pair.src, host, pair.dst)
+	log.Printf("forwarding connection: %s -> %s:%s", pair.src, host, pair.dst)
 
 	for {
+		log := log.New(log.Writer(),
+			fmt.Sprintf("[%s -> %s:%s no:%d]: ", pair.src, host, pair.dst, n.Add(1)),
+			log.Flags())
+
 		src, err := l.Accept()
 		if err != nil {
 			log.Printf("accept error on %s: %v", pair.src, err)
 			return
 		}
-
 		dst, err := net.DialTimeout("tcp", net.JoinHostPort(host, pair.dst), 5*time.Second)
 		if err != nil {
 			log.Printf("dial error to %s:%s: %v", host, pair.dst, err)
 			src.Close()
 			continue
 		}
-
-		go func(s, d net.Conn) {
-			defer s.Close()
-			defer d.Close()
-
-			errChan := make(chan error, 2)
-			cp := func(dst io.Writer, src io.Reader) {
-				_, err := io.Copy(dst, src)
-				errChan <- err
-			}
-
-			go cp(s, d)
-			go cp(d, s)
-
-			// Wait for one side to finish or error
-			<-errChan
-		}(src, dst)
+		log.Println("forwarding connection")
+		go func() {
+			io.Copy(src, dst)
+			src.Close()
+		}()
+		go func() {
+			io.Copy(dst, src)
+			dst.Close()
+		}()
 	}
 }
