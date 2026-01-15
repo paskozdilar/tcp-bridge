@@ -124,6 +124,7 @@ func forwardPortToPort(pair portPair) {
 			log.Printf("accept error on %s: %v", pair.src, err)
 			return
 		}
+		log.Println("attempting connection")
 		dst, err := net.DialTimeout("tcp", net.JoinHostPort(host, pair.dst), 5*time.Second)
 		if err != nil {
 			log.Printf("dial error to %s:%s: %v", host, pair.dst, err)
