@@ -12,7 +12,7 @@ Forwards all TCP connections to HOST, from a list of PORTS.
 Arguments:
     HOST        destination host (e.g. "example.com", "192.168.1.42")
     PORTS       space-delimited list of ports to be forwarded (e.g. "8080")
-                or pairs of port mappings (e.g. \"80->8080 443->8443\")
+                or pairs of port mappings (e.g. "80->8080 443->8443")
 ```
 
 ### Examples
